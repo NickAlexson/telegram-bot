@@ -28,7 +28,7 @@ service = build('sheets', 'v4', credentials=creds)
 MOSCOW_TZ = pytz.timezone('Europe/Moscow')
 
     # Обязательные точки
-REQUIRED_POINTS = ['Титан Арена', 'Макси Арх', 'Макси Севск']
+REQUIRED_POINTS = ['Титан Арена', 'Макси Севск']
 
 
     # Универсальная отправка сообщения
