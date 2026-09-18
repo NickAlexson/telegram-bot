@@ -1,14 +1,16 @@
 import os
-from datetime import datetime, time, timedelta
 
-import pytz
 from dotenv import load_dotenv
-
-from google.oauth2.service_account import Credentials
-from googleapiclient.discovery import build
 
 from telegram import Update
 from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes
+
+from googleapiclient.discovery import build
+from google.oauth2.service_account import Credentials
+
+from datetime import datetime, time, timedelta
+
+import pytz
 
 
 # ============================================================
@@ -19,36 +21,46 @@ load_dotenv()
 
 # -------------------- Основной чат --------------------
 
-BOT_TOKEN = os.getenv("BOT_TOKEN")
+BOT_TOKEN = os.getenv('BOT_TOKEN')
 
-GROUP_CHAT_ID = int(os.getenv("GROUP_CHAT_ID"))
+GROUP_CHAT_ID = int(os.getenv('GROUP_CHAT_ID'))
 
-TOPIC_ID = os.getenv("TOPIC_ID")
+TOPIC_ID = os.getenv('TOPIC_ID')
 if TOPIC_ID:
-    TOPIC_ID = int(TOPIC_ID)
+    TOPIC_ID = int(TOPIC_ID)
 
 # Таблицы Титан Арена + Макси Севск
-SPREADSHEET_ID_1 = os.getenv("SPREADSHEET_ID_1")  # утро
-SPREADSHEET_ID_2 = os.getenv("SPREADSHEET_ID_2")  # вечер
+SPREADSHEET_ID_1 = os.getenv('SPREADSHEET_ID_1')  # утро
+SPREADSHEET_ID_2 = os.getenv('SPREADSHEET_ID_2')  # вечер
 
 
 # -------------------- Мурманск --------------------
 
-GROUP_CHAT_ID_M = int(os.getenv("GROUP_CHAT_ID_M"))
+# Пока значения могут отсутствовать.
+# Они понадобятся после получения ID второго чата и таблиц.
 
-TOPIC_ID_M = os.getenv("TOPIC_ID_M")
+GROUP_CHAT_ID_M_VALUE = os.getenv('GROUP_CHAT_ID_M')
+
+if GROUP_CHAT_ID_M_VALUE:
+    GROUP_CHAT_ID_M = int(GROUP_CHAT_ID_M_VALUE)
+else:
+    GROUP_CHAT_ID_M = None
+
+
+TOPIC_ID_M = os.getenv('TOPIC_ID_M')
+
 if TOPIC_ID_M:
-    TOPIC_ID_M = int(TOPIC_ID_M)
+    TOPIC_ID_M = int(TOPIC_ID_M)
 
-# Таблицы Мурманска
-SPREADSHEET_ID_M_1 = os.getenv("SPREADSHEET_ID_M_1")  # утро
-SPREADSHEET_ID_M_2 = os.getenv("SPREADSHEET_ID_M_2")  # вечер
+
+SPREADSHEET_ID_M_1 = os.getenv('SPREADSHEET_ID_M_1')  # утро
+SPREADSHEET_ID_M_2 = os.getenv('SPREADSHEET_ID_M_2')  # вечер
 
 
 # -------------------- Проверка BOT_TOKEN --------------------
 
 if not BOT_TOKEN:
-    raise ValueError("BOT_TOKEN не найден в .env")
+    raise ValueError('BOT_TOKEN не найден в .env')
 
 
 # ============================================================
@@ -56,18 +68,18 @@ if not BOT_TOKEN:
 # ============================================================
 
 SCOPES = [
-    "https://www.googleapis.com/auth/spreadsheets.readonly"
+    'https://www.googleapis.com/auth/spreadsheets.readonly'
 ]
 
 creds = Credentials.from_service_account_file(
-    "credentials.json",
-    scopes=SCOPES
+    'credentials.json',
+    scopes=SCOPES
 )
 
 service = build(
-    "sheets",
-    "v4",
-    credentials=creds
+    'sheets',
+    'v4',
+    credentials=creds
 )
 
 
@@ -75,22 +87,22 @@ service = build(
 # SETTINGS
 # ============================================================
 
-MOSCOW_TZ = pytz.timezone("Europe/Moscow")
+MOSCOW_TZ = pytz.timezone('Europe/Moscow')
 
 # Основные точки
 REQUIRED_POINTS = [
-    "Титан Арена",
-    "Макси Севск"
+    'Титан Арена',
+    'Макси Севск'
 ]
 
 # Мурманские точки
 REQUIRED_POINTS_M = [
-    "Мурманск Молл",
-    "Плазма",
-    "Северное Нагорное"
+    'Мурманск Молл',
+    'Плазма',
+    'Северное Нагорное'
 ]
 
-CHECK_RANGE = "B:C"
+CHECK_RANGE = 'B:C'
 
 DAYS_FOR_SVOD = 14
 
@@ -100,49 +112,27 @@ DAYS_FOR_SVOD = 14
 # ============================================================
 
 async def send_message(
-    context: ContextTypes.DEFAULT_TYPE,
-    text: str,
-    chat_id: int,
-    topic_id: int | None = None
+    context: ContextTypes.DEFAULT_TYPE,
+    text: str,
+    chat_id: int,
+    topic_id=None
 ):
-    """
-    Отправляет сообщение в указанный чат.
-    Если указан topic_id — сообщение отправляется в тему форума.
-    """
+    """
+    Отправляет сообщение в указанный чат.
+    Если указан topic_id — сообщение отправляется в тему форума.
+    """
 
-    if topic_id:
-        await context.bot.send_message(
-            chat_id=chat_id,
-            text=text,
-            message_thread_id=topic_id
-        )
-    else:
-        await context.bot.send_message(
-            chat_id=chat_id,
-            text=text
-        )
-
-
-# ============================================================
-# COMMAND /ID
-# ============================================================
-
-async def get_id(
-    update: Update,
-    context: ContextTypes.DEFAULT_TYPE
-):
-    """
-    Показывает ID текущего Telegram-чата
-    и ID текущей темы форума.
-    """
-
-    chat_id = update.effective_chat.id
-    topic_id = update.message.message_thread_id
-
-    await update.message.reply_text(
-        f"ID чата: {chat_id}\n"
-        f"ID темы: {topic_id}"
-    )
+    if topic_id:
+        await context.bot.send_message(
+            chat_id=chat_id,
+            text=text,
+            message_thread_id=topic_id
+        )
+    else:
+        await context.bot.send_message(
+            chat_id=chat_id,
+            text=text
+        )
 
 
 # ============================================================
@@ -150,69 +140,69 @@ async def get_id(
 # ============================================================
 
 async def check_sheet(
-    context: ContextTypes.DEFAULT_TYPE,
-    spreadsheet_id: str,
-    label: str,
-    required_points: list[str],
-    chat_id: int,
-    topic_id: int | None = None
+    context: ContextTypes.DEFAULT_TYPE,
+    spreadsheet_id: str,
+    label: str,
+    required_points: list,
+    chat_id: int,
+    topic_id=None
 ):
-    """
-    Проверяет сегодняшние записи в Google Таблице.
+    """
+    Проверяет сегодняшние записи в Google Таблице.
 
-    B = дата
-    C = название точки
-    """
+    B = дата
+    C = название точки
+    """
 
-    sheet = service.spreadsheets()
+    sheet = service.spreadsheets()
 
-    result = sheet.values().get(
-        spreadsheetId=spreadsheet_id,
-        range=CHECK_RANGE
-    ).execute()
+    result = sheet.values().get(
+        spreadsheetId=spreadsheet_id,
+        range=CHECK_RANGE
+    ).execute()
 
-    values = result.get("values", [])
+    values = result.get('values', [])
 
-    today = datetime.now(MOSCOW_TZ).strftime("%d.%m.%Y")
+    today = datetime.now(MOSCOW_TZ).strftime('%d.%m.%Y')
 
-    recorded_points = set()
+    recorded_points = set()
 
-    for row in values:
+    for row in values:
 
-        if len(row) < 2:
-            continue
+        if len(row) < 2:
+            continue
 
-        date_value = row[0].strip()
-        point_value = row[1].strip()
+        date_value = row[0].strip()
+        point_value = row[1].strip()
 
-        if date_value == today:
-            recorded_points.add(point_value)
+        if date_value == today:
+            recorded_points.add(point_value)
 
-    missing_points = [
-        point
-        for point in required_points
-        if point not in recorded_points
-    ]
+    missing_points = [
+        point
+        for point in required_points
+        if point not in recorded_points
+    ]
 
-    if missing_points:
+    if missing_points:
 
-        text = (
-            f'{label}: ❌ нет записи от '
-            f'{", ".join(missing_points)} на {today}'
-        )
+        text = (
+            f'{label}: ❌ нет записи от '
+            f'{", ".join(missing_points)} на {today}'
+        )
 
-    else:
+    else:
 
-        text = (
-            f"{label}: ✅ все точки сделали записи на {today}"
-        )
+        text = (
+            f'{label}: ✅ все точки сделали записи на {today}'
+        )
 
-    await send_message(
-        context,
-        text,
-        chat_id,
-        topic_id
-    )
+    await send_message(
+        context,
+        text,
+        chat_id,
+        topic_id
+    )
 
 
 # ============================================================
@@ -220,59 +210,52 @@ async def check_sheet(
 # ============================================================
 
 def get_records_for_period(
-    spreadsheet_id: str,
-    days: int
+    spreadsheet_id: str,
+    days: int
 ):
-    """
-    Получает записи из Google Таблицы за указанный период.
+    """
+    Получает записи из Google Таблицы за указанный период.
+    """
 
-    Возвращает:
+    sheet = service.spreadsheets()
 
-    {
-        "01.09.2026": {"Титан Арена", "Макси Севск"},
-        ...
-    }
-    """
+    result = sheet.values().get(
+        spreadsheetId=spreadsheet_id,
+        range=CHECK_RANGE
+    ).execute()
 
-    sheet = service.spreadsheets()
+    values = result.get('values', [])
 
-    result = sheet.values().get(
-        spreadsheetId=spreadsheet_id,
-        range=CHECK_RANGE
-    ).execute()
+    today = datetime.now(MOSCOW_TZ).date()
 
-    values = result.get("values", [])
+    start_date = today - timedelta(days=days)
 
-    today = datetime.now(MOSCOW_TZ).date()
+    data = {}
 
-    start_date = today - timedelta(days=days)
+    for row in values:
 
-    data = {}
+        if len(row) < 2:
+            continue
 
-    for row in values:
+        try:
+            row_date = datetime.strptime(
+                row[0].strip(),
+                '%d.%m.%Y'
+            ).date()
 
-        if len(row) < 2:
-            continue
+        except ValueError:
+            continue
 
-        try:
-            row_date = datetime.strptime(
-                row[0].strip(),
-                "%d.%m.%Y"
-            ).date()
+        if not (start_date <= row_date <= today):
+            continue
 
-        except ValueError:
-            continue
+        date_key = row_date.strftime('%d.%m.%Y')
 
-        if not (start_date <= row_date <= today):
-            continue
+        point = row[1].strip()
 
-        date_key = row_date.strftime("%d.%m.%Y")
+        data.setdefault(date_key, set()).add(point)
 
-        point = row[1].strip()
-
-        data.setdefault(date_key, set()).add(point)
-
-    return data
+    return data
 
 
 # ============================================================
@@ -280,220 +263,274 @@ def get_records_for_period(
 # ============================================================
 
 def build_svod(
-    spreadsheet_id_morning: str,
-    spreadsheet_id_evening: str,
-    required_points: list[str],
-    days: int
+    spreadsheet_id_morning: str,
+    spreadsheet_id_evening: str,
+    required_points: list,
+    days: int
 ):
-    """
-    Формирует сводку для конкретной группы точек.
-    """
+    """
+    Формирует сводку для конкретной группы точек.
+    """
 
-    morning = get_records_for_period(
-        spreadsheet_id_morning,
-        days
-    )
+    morning = get_records_for_period(
+        spreadsheet_id_morning,
+        days
+    )
 
-    evening = get_records_for_period(
-        spreadsheet_id_evening,
-        days
-    )
+    evening = get_records_for_period(
+        spreadsheet_id_evening,
+        days
+    )
 
-    # Показываем все даты периода,
-    # а не только даты, где были записи.
-    today = datetime.now(MOSCOW_TZ).date()
+    today = datetime.now(MOSCOW_TZ).date()
 
-    start_date = today - timedelta(days=days)
+    start_date = today - timedelta(days=days)
 
-    result = []
+    result = []
 
-    current_date = start_date
+    current_date = start_date
 
-    while current_date <= today:
+    while current_date <= today:
 
-        date_key = current_date.strftime("%d.%m.%Y")
+        date_key = current_date.strftime('%d.%m.%Y')
 
-        missing = []
+        missing = []
 
-        for point in required_points:
+        for point in required_points:
 
-            if point not in morning.get(date_key, set()):
-                missing.append(
-                    f"❌ {point} — утро"
-                )
+            if point not in morning.get(date_key, set()):
+                missing.append(
+                    f'❌ {point} — утро'
+                )
 
-            if point not in evening.get(date_key, set()):
-                missing.append(
-                    f"❌ {point} — вечер"
-                )
+            if point not in evening.get(date_key, set()):
+                missing.append(
+                    f'❌ {point} — вечер'
+                )
 
-        if not missing:
+        if not missing:
 
-            result.append(
-                f"{date_key[:5]} ✅ все точки"
-            )
+            result.append(
+                f'{date_key[:5]} ✅ все точки'
+            )
 
-        else:
+        else:
 
-            result.append(
-                f"{date_key[:5]}"
-            )
+            result.append(
+                f'{date_key[:5]}'
+            )
 
-            result.extend(missing)
+            result.extend(missing)
 
-        result.append("")
+        result.append('')
 
-        current_date += timedelta(days=1)
+        current_date += timedelta(days=1)
 
-    return "\n".join(result).strip()
+    return '\n'.join(result).strip()
 
 
 # ============================================================
-# COMMANDS — ОСНОВНЫЕ ТОЧКИ
+# COMMAND: /START
 # ============================================================
 
 async def start(
-    update: Update,
-    context: ContextTypes.DEFAULT_TYPE
+    update: Update,
+    context: ContextTypes.DEFAULT_TYPE
 ):
 
-    await update.message.reply_text(
-        "Бот запущен ✅\n"
-        "\n"
-        "Основные команды:\n"
-        "/check — ручная проверка\n"
-        "/svod — сводка за 14 дней\n"
-        "\n"
-        "Мурманск:\n"
-        "/checkm — ручная проверка\n"
-        "/svodm — сводка за 14 дней\n"
-        "\n"
-        "/id — показать ID чата и темы"
-    )
-
-
-async def manual_check(
-    update: Update,
-    context: ContextTypes.DEFAULT_TYPE
-):
-
-    await update.message.reply_text(
-        "Запускаю проверку..."
-    )
-
-    await check_sheet(
-        context=context,
-        spreadsheet_id=SPREADSHEET_ID_1,
-        label="Ручная проверка: Утренний чек-лист",
-        required_points=REQUIRED_POINTS,
-        chat_id=GROUP_CHAT_ID,
-        topic_id=TOPIC_ID
-    )
-
-    await check_sheet(
-        context=context,
-        spreadsheet_id=SPREADSHEET_ID_2,
-        label="Ручная проверка: Вечерний чек-лист",
-        required_points=REQUIRED_POINTS,
-        chat_id=GROUP_CHAT_ID,
-        topic_id=TOPIC_ID
-    )
-
-
-async def svod(
-    update: Update,
-    context: ContextTypes.DEFAULT_TYPE
-):
-
-    await update.message.reply_text(
-        "Формирую сводку за 14 дней ⏳"
-    )
-
-    try:
-
-        text = build_svod(
-            spreadsheet_id_morning=SPREADSHEET_ID_1,
-            spreadsheet_id_evening=SPREADSHEET_ID_2,
-            required_points=REQUIRED_POINTS,
-            days=DAYS_FOR_SVOD
-        )
-
-    except Exception as e:
-
-        await update.message.reply_text(
-            f"Ошибка формирования сводки ❌\n{e}"
-        )
-
-        return
-
-    if not text:
-        text = "Нет данных за указанный период"
-
-    await update.message.reply_text(text)
+    await update.message.reply_text(
+        'Бот запущен ✅\n'
+        '\n'
+        'Основные команды:\n'
+        '/check — ручная проверка\n'
+        '/svod — сводка за 14 дней\n'
+        '\n'
+        'Мурманск:\n'
+        '/checkm — ручная проверка\n'
+        '/svodm — сводка за 14 дней\n'
+        '\n'
+        '/id — узнать ID чата и темы'
+    )
 
 
 # ============================================================
-# COMMANDS — МУРМАНСК
+# COMMAND: /ID
+# ============================================================
+
+async def chat_id(
+    update: Update,
+    context: ContextTypes.DEFAULT_TYPE
+):
+    """
+    Показывает ID текущего чата и темы.
+    """
+
+    chat_id_value = update.effective_chat.id
+
+    thread_id = None
+
+    if update.message:
+        thread_id = update.message.message_thread_id
+
+    await update.message.reply_text(
+        f'Chat ID: {chat_id_value}\n'
+        f'Topic ID: {thread_id}'
+    )
+
+
+# ============================================================
+# COMMAND: /CHECK
+# ============================================================
+
+async def manual_check(
+    update: Update,
+    context: ContextTypes.DEFAULT_TYPE
+):
+
+    await update.message.reply_text(
+        'Запускаю проверку...'
+    )
+
+    await check_sheet(
+        context=context,
+        spreadsheet_id=SPREADSHEET_ID_1,
+        label='Ручная проверка: Утренний чек-лист',
+        required_points=REQUIRED_POINTS,
+        chat_id=GROUP_CHAT_ID,
+        topic_id=TOPIC_ID
+    )
+
+    await check_sheet(
+        context=context,
+        spreadsheet_id=SPREADSHEET_ID_2,
+        label='Ручная проверка: Вечерний чек-лист',
+        required_points=REQUIRED_POINTS,
+        chat_id=GROUP_CHAT_ID,
+        topic_id=TOPIC_ID
+    )
+
+
+# ============================================================
+# COMMAND: /SVOD
+# ============================================================
+
+async def svod(
+    update: Update,
+    context: ContextTypes.DEFAULT_TYPE
+):
+
+    await update.message.reply_text(
+        'Формирую сводку за 14 дней ⏳'
+    )
+
+    try:
+
+        text = build_svod(
+            spreadsheet_id_morning=SPREADSHEET_ID_1,
+            spreadsheet_id_evening=SPREADSHEET_ID_2,
+            required_points=REQUIRED_POINTS,
+            days=DAYS_FOR_SVOD
+        )
+
+    except Exception as e:
+
+        await update.message.reply_text(
+            f'Ошибка формирования сводки ❌\n{e}'
+        )
+
+        return
+
+    if not text:
+        text = 'Нет данных за указанный период'
+
+    await update.message.reply_text(text)
+
+
+# ============================================================
+# COMMAND: /CHECKM
 # ============================================================
 
 async def manual_check_m(
-    update: Update,
-    context: ContextTypes.DEFAULT_TYPE
+    update: Update,
+    context: ContextTypes.DEFAULT_TYPE
 ):
 
-    await update.message.reply_text(
-        "Запускаю проверку Мурманска..."
-    )
+    if not GROUP_CHAT_ID_M:
+        await update.message.reply_text(
+            'Мурманск пока не настроен ❌\n'
+            'Сначала добавьте GROUP_CHAT_ID_M в .env'
+        )
+        return
 
-    await check_sheet(
-        context=context,
-        spreadsheet_id=SPREADSHEET_ID_M_1,
-        label="Ручная проверка: Утренний чек-лист Мурманск",
-        required_points=REQUIRED_POINTS_M,
-        chat_id=GROUP_CHAT_ID_M,
-        topic_id=TOPIC_ID_M
-    )
+    if not SPREADSHEET_ID_M_1 or not SPREADSHEET_ID_M_2:
+        await update.message.reply_text(
+            'Не указаны таблицы Мурманска ❌'
+        )
+        return
 
-    await check_sheet(
-        context=context,
-        spreadsheet_id=SPREADSHEET_ID_M_2,
-        label="Ручная проверка: Вечерний чек-лист Мурманск",
-        required_points=REQUIRED_POINTS_M,
-        chat_id=GROUP_CHAT_ID_M,
-        topic_id=TOPIC_ID_M
-    )
+    await update.message.reply_text(
+        'Запускаю проверку Мурманска...'
+    )
 
+    await check_sheet(
+        context=context,
+        spreadsheet_id=SPREADSHEET_ID_M_1,
+        label='Ручная проверка: Утренний чек-лист Мурманск',
+        required_points=REQUIRED_POINTS_M,
+        chat_id=GROUP_CHAT_ID_M,
+        topic_id=TOPIC_ID_M
+    )
+
+    await check_sheet(
+        context=context,
+        spreadsheet_id=SPREADSHEET_ID_M_2,
+        label='Ручная проверка: Вечерний чек-лист Мурманск',
+        required_points=REQUIRED_POINTS_M,
+        chat_id=GROUP_CHAT_ID_M,
+        topic_id=TOPIC_ID_M
+    )
+
+
+# ============================================================
+# COMMAND: /SVODM
+# ============================================================
 
 async def svod_m(
-    update: Update,
-    context: ContextTypes.DEFAULT_TYPE
+    update: Update,
+    context: ContextTypes.DEFAULT_TYPE
 ):
 
-    await update.message.reply_text(
-        "Формирую сводку Мурманска за 14 дней ⏳"
-    )
+    if not SPREADSHEET_ID_M_1 or not SPREADSHEET_ID_M_2:
+        await update.message.reply_text(
+            'Таблицы Мурманска пока не настроены ❌'
+        )
+        return
 
-    try:
+    await update.message.reply_text(
+        'Формирую сводку Мурманска за 14 дней ⏳'
+    )
 
-        text = build_svod(
-            spreadsheet_id_morning=SPREADSHEET_ID_M_1,
-            spreadsheet_id_evening=SPREADSHEET_ID_M_2,
-            required_points=REQUIRED_POINTS_M,
-            days=DAYS_FOR_SVOD
-        )
+    try:
 
-    except Exception as e:
+        text = build_svod(
+            spreadsheet_id_morning=SPREADSHEET_ID_M_1,
+            spreadsheet_id_evening=SPREADSHEET_ID_M_2,
+            required_points=REQUIRED_POINTS_M,
+            days=DAYS_FOR_SVOD
+        )
 
-        await update.message.reply_text(
-            f"Ошибка формирования сводки Мурманска ❌\n{e}"
-        )
+    except Exception as e:
 
-        return
+        await update.message.reply_text(
+            f'Ошибка формирования сводки Мурманска ❌\n{e}'
+        )
 
-    if not text:
-        text = "Нет данных за указанный период"
+        return
 
-    await update.message.reply_text(text)
+    if not text:
+        text = 'Нет данных за указанный период'
+
+    await update.message.reply_text(text)
 
 
 # ============================================================
@@ -501,31 +538,31 @@ async def svod_m(
 # ============================================================
 
 async def morning_check(
-    context: ContextTypes.DEFAULT_TYPE
+    context: ContextTypes.DEFAULT_TYPE
 ):
 
-    await check_sheet(
-        context=context,
-        spreadsheet_id=SPREADSHEET_ID_1,
-        label="Утренняя проверка чек-листов",
-        required_points=REQUIRED_POINTS,
-        chat_id=GROUP_CHAT_ID,
-        topic_id=TOPIC_ID
-    )
+    await check_sheet(
+        context=context,
+        spreadsheet_id=SPREADSHEET_ID_1,
+        label='Утренняя проверка чек-листов',
+        required_points=REQUIRED_POINTS,
+        chat_id=GROUP_CHAT_ID,
+        topic_id=TOPIC_ID
+    )
 
 
 async def evening_check(
-    context: ContextTypes.DEFAULT_TYPE
+    context: ContextTypes.DEFAULT_TYPE
 ):
 
-    await check_sheet(
-        context=context,
-        spreadsheet_id=SPREADSHEET_ID_2,
-        label="Вечерняя проверка чек-листов",
-        required_points=REQUIRED_POINTS,
-        chat_id=GROUP_CHAT_ID,
-        topic_id=TOPIC_ID
-    )
+    await check_sheet(
+        context=context,
+        spreadsheet_id=SPREADSHEET_ID_2,
+        label='Вечерняя проверка чек-листов',
+        required_points=REQUIRED_POINTS,
+        chat_id=GROUP_CHAT_ID,
+        topic_id=TOPIC_ID
+    )
 
 
 # ============================================================
@@ -533,31 +570,43 @@ async def evening_check(
 # ============================================================
 
 async def morning_check_m(
-    context: ContextTypes.DEFAULT_TYPE
+    context: ContextTypes.DEFAULT_TYPE
 ):
 
-    await check_sheet(
-        context=context,
-        spreadsheet_id=SPREADSHEET_ID_M_1,
-        label="Утренняя проверка чек-листов Мурманск",
-        required_points=REQUIRED_POINTS_M,
-        chat_id=GROUP_CHAT_ID_M,
-        topic_id=TOPIC_ID_M
-    )
+    if not GROUP_CHAT_ID_M:
+        return
+
+    if not SPREADSHEET_ID_M_1:
+        return
+
+    await check_sheet(
+        context=context,
+        spreadsheet_id=SPREADSHEET_ID_M_1,
+        label='Утренняя проверка чек-листов Мурманск',
+        required_points=REQUIRED_POINTS_M,
+        chat_id=GROUP_CHAT_ID_M,
+        topic_id=TOPIC_ID_M
+    )
 
 
 async def evening_check_m(
-    context: ContextTypes.DEFAULT_TYPE
+    context: ContextTypes.DEFAULT_TYPE
 ):
 
-    await check_sheet(
-        context=context,
-        spreadsheet_id=SPREADSHEET_ID_M_2,
-        label="Вечерняя проверка чек-листов Мурманск",
-        required_points=REQUIRED_POINTS_M,
-        chat_id=GROUP_CHAT_ID_M,
-        topic_id=TOPIC_ID_M
-    )
+    if not GROUP_CHAT_ID_M:
+        return
+
+    if not SPREADSHEET_ID_M_2:
+        return
+
+    await check_sheet(
+        context=context,
+        spreadsheet_id=SPREADSHEET_ID_M_2,
+        label='Вечерняя проверка чек-листов Мурманск',
+        required_points=REQUIRED_POINTS_M,
+        chat_id=GROUP_CHAT_ID_M,
+        topic_id=TOPIC_ID_M
+    )
 
 
 # ============================================================
@@ -566,96 +615,93 @@ async def evening_check_m(
 
 def main():
 
-    app_tg = (
-        ApplicationBuilder()
-        .token(BOT_TOKEN)
-        .build()
-    )
+    app_tg = (
+        ApplicationBuilder()
+        .token(BOT_TOKEN)
+        .build()
+    )
 
-    # -------------------- Команды --------------------
+    # -------------------- Команды --------------------
 
-    # Определение ID чата и темы
-    app_tg.add_handler(
-        CommandHandler("id", get_id)
-    )
+    app_tg.add_handler(
+        CommandHandler('start', start)
+    )
 
-    # Основные точки
-    app_tg.add_handler(
-        CommandHandler("start", start)
-    )
+    app_tg.add_handler(
+        CommandHandler('id', chat_id)
+    )
 
-    app_tg.add_handler(
-        CommandHandler("check", manual_check)
-    )
+    app_tg.add_handler(
+        CommandHandler('check', manual_check)
+    )
 
-    app_tg.add_handler(
-        CommandHandler("svod", svod)
-    )
+    app_tg.add_handler(
+        CommandHandler('svod', svod)
+    )
 
-    # Мурманск
-    app_tg.add_handler(
-        CommandHandler("checkm", manual_check_m)
-    )
+    app_tg.add_handler(
+        CommandHandler('checkm', manual_check_m)
+    )
 
-    app_tg.add_handler(
-        CommandHandler("svodm", svod_m)
-    )
+    app_tg.add_handler(
+        CommandHandler('svodm', svod_m)
+    )
 
-    # -------------------- Планировщик --------------------
+    # -------------------- Планировщик --------------------
 
-    job_queue = app_tg.job_queue
+    job_queue = app_tg.job_queue
 
-    # Основные точки — утро
-    job_queue.run_daily(
-        morning_check,
-        time=time(
-            hour=10,
-            minute=10,
-            tzinfo=MOSCOW_TZ
-        )
-    )
+    # Основные точки — утро
+    job_queue.run_daily(
+        morning_check,
+        time=time(
+            hour=10,
+            minute=10,
+            tzinfo=MOSCOW_TZ
+        )
+    )
 
-    # Основные точки — вечер
-    job_queue.run_daily(
-        evening_check,
-        time=time(
-            hour=21,
-            minute=30,
-            tzinfo=MOSCOW_TZ
-        )
-    )
+    # Основные точки — вечер
+    job_queue.run_daily(
+        evening_check,
+        time=time(
+            hour=21,
+            minute=30,
+            tzinfo=MOSCOW_TZ
+        )
+    )
 
-    # Мурманск — утро
-    job_queue.run_daily(
-        morning_check_m,
-        time=time(
-            hour=10,
-            minute=10,
-            tzinfo=MOSCOW_TZ
-        )
-    )
+    # Мурманск — утро
+    job_queue.run_daily(
+        morning_check_m,
+        time=time(
+            hour=10,
+            minute=10,
+            tzinfo=MOSCOW_TZ
+        )
+    )
 
-    # Мурманск — вечер
-    job_queue.run_daily(
-        evening_check_m,
-        time=time(
-            hour=21,
-            minute=30,
-            tzinfo=MOSCOW_TZ
-        )
-    )
+    # Мурманск — вечер
+    job_queue.run_daily(
+        evening_check_m,
+        time=time(
+            hour=21,
+            minute=30,
+            tzinfo=MOSCOW_TZ
+        )
+    )
 
-    print(
-        "Бот запущен ✅ "
-        "Ожидает команды..."
-    )
+    print(
+        'Бот запущен ✅ '
+        'Ожидает команды...'
+    )
 
-    app_tg.run_polling()
+    app_tg.run_polling()
 
 
 # ============================================================
 # START
 # ============================================================
 
-if __name__ == "__main__":
-    main()
+if __name__ == '__main__':
+    main()
