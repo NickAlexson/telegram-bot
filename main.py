@@ -530,7 +530,10 @@ async def svod_m(
     if not text:
         text = 'Нет данных за указанный период'
 
-    await update.message.reply_text(text)
+    MAX_MESSAGE_LENGTH=4000
+
+    for i in range(0, len(text), MAX_MESSAGE_LENGTH):
+        await update.message.reply_text(text[i:i + MAX_MESSAGE_LENGTH)
 
 
 # ============================================================
