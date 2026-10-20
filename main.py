@@ -688,7 +688,7 @@ def main():
     job_queue.run_daily(
         evening_check_m,
         time=time(
-            hour=21,
+            hour=22,
             minute=30,
             tzinfo=MOSCOW_TZ
         )
